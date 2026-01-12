@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OBSIDIAN: Epoch to Flock - VR Experience</title>
+  <meta name="description" content="An Urban Multimedia Opera - VR Prototype">
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-particle-system-component@1.0.x/dist/aframe-particle-system-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-environment-component@1.3.2/dist/aframe-environment-component.min.js"></script>
+  <style>
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 1s ease-out;
+      font-family: 'Georgia', serif;
+    }
+    .loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loading-title {
+      color: #fff;
+      font-size: 3em;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      text-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
+    }
+    .loading-subtitle {
+      color: #a0a0a0;
+      font-size: 1.2em;
+      letter-spacing: 0.2em;
+      margin-bottom: 40px;
+    }
+    .enter-vr-btn {
+      padding: 20px 60px;
+      font-size: 1.2em;
+      background: linear-gradient(135deg, #2d1f3d 0%, #1a1a2e 100%);
+      border: 2px solid #8a2be2;
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 0.15em;
+      transition: all 0.3s ease;
+      font-family: 'Georgia', serif;
+    }
+    .enter-vr-btn:hover {
+      background: linear-gradient(135deg, #8a2be2 0%, #4a0080 100%);
+      box-shadow: 0 0 30px rgba(138, 43, 226, 0.6);
+    }
+    .instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #666;
+      font-family: 'Georgia', serif;
+      font-size: 0.9em;
+      text-align: center;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-title">OBSIDIAN</div>
+    <div class="loading-subtitle">Epoch to Flock</div>
+    <button class="enter-vr-btn" id="enterBtn">ENTER EXPERIENCE</button>
+  </div>
+
+  <div class="instructions" id="instructions">
+    Look at the obsidian rock and click/tap to interact • On Quest: Use trigger button
+  </div>
+
+  <a-scene 
+    vr-mode-ui="enabled: true"
+    renderer="antialias: true; colorManagement: true; sortObjects: true; physicallyCorrectLights: true"
+    loading-screen="enabled: false">
+    
+    <!-- Assets -->
+    <a-assets>
+    </a-assets>
+
+    <!-- Camera Rig -->
+    <a-entity id="rig" position="0 0 4">
+      <a-camera 
+        id="camera"
+        look-controls="pointerLockEnabled: false"
+        wasd-controls="enabled: true">
+        <a-cursor
+          id="cursor"
+          fuse="true"
+          fuse-timeout="1500"
+          raycaster="objects: .interactive; far: 100"
+          animation__click="property: scale; startEvents: click; easing: easeInCubic; dur: 150; from: 0.1 0.1 0.1; to: 1 1 1"
+          animation__fusing="property: scale; startEvents: fusing; easing: easeInCubic; dur: 1500; from: 1 1 1; to: 0.1 0.1 0.1"
+          animation__mouseleave="property: scale; startEvents: mouseleave; easing: easeInCubic; dur: 500; to: 1 1 1"
+          geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+          material="color: white; shader: flat; opacity: 0.8">
+        </a-cursor>
+      </a-camera>
+    </a-entity>
+
+    <!-- Colorado Plains Environment -->
+    <a-entity 
+      environment="
+        preset: forest;
+        skyType: atmosphere;
+        skyColor: #4a3060;
+        horizonColor: #bc6c25;
+        lighting: distant;
+        lightPosition: 0.5 0.1 0;
+        fog: 0.7;
+        flatShading: false;
+        playArea: 1;
+        ground: flat;
+        groundYScale: 3;
+        groundColor: #553322;
+        groundColor2: #443322;
+        groundTexture: walkernoise;
+        dressing: trees;
+        dressingAmount: 100;
+        dressingColor: #2d4a2d;
+        dressingScale: 3;
+        dressingVariance: 5 5 5;
+        grid: none;
+      ">
+    </a-entity>
+
+    <!-- Rocky Mountains in Distance -->
+    <a-entity id="mountains">
+      <!-- Mountain range backdrop -->
+      <a-cone position="-30 8 -60" radius-bottom="25" radius-top="0" height="35" 
+              material="color: #2c3e50; flatShading: true; opacity: 0.9"></a-cone>
+      <a-cone position="-10 12 -70" radius-bottom="30" radius-top="0" height="45" 
+              material="color: #34495e; flatShading: true; opacity: 0.85"></a-cone>
+      <a-cone position="15 10 -65" radius-bottom="28" radius-top="0" height="40" 
+              material="color: #2c3e50; flatShading: true; opacity: 0.9"></a-cone>
+      <a-cone position="40 7 -55" radius-bottom="22" radius-top="0" height="30" 
+              material="color: #3d5a6e; flatShading: true; opacity: 0.85"></a-cone>
+      <a-cone position="-50 6 -50" radius-bottom="20" radius-top="0" height="28" 
+              material="color: #3d5a6e; flatShading: true; opacity: 0.8"></a-cone>
+      <!-- Snow caps -->
+      <a-cone position="-10 29 -70" radius-bottom="8" radius-top="0" height="10"
+              material="color: #ecf0f1; flatShading: true; opacity: 0.95"></a-cone>
+      <a-cone position="15 24 -65" radius-bottom="7" radius-top="0" height="8"
+              material="color: #ecf0f1; flatShading: true; opacity: 0.9"></a-cone>
+    </a-entity>
+
+    <!-- Cabin for 1864 Homestead -->
+    <a-entity id="cabin" position="0 0 -12" visible="true">
+      <!-- Main Cabin -->
+      <a-entity position="-6 0 0">
+        <a-box width="4" height="2.5" depth="3" position="0 1.25 0"
+          material="color: #2a1a0a; flatShading: true"></a-box>
+        <a-entity geometry="primitive: cone; radiusBottom: 3; radiusTop: 0; height: 2; segmentsRadial: 4"
+          position="0 3.5 0" rotation="0 45 0"
+          material="color: #1a0f05; flatShading: true"></a-entity>
+        <a-box width="0.5" height="1.2" depth="0.5" position="1 4 0.5"
+          material="color: #151010"></a-box>
+        <!-- Window with ominous glow -->
+        <a-plane width="0.6" height="0.5" position="2.01 1.5 0" rotation="0 90 0"
+          material="color: #ff6633; emissive: #ff4411; emissiveIntensity: 0.8"
+          animation="property: material.emissiveIntensity; to: 0.4; dur: 1000; dir: alternate; loop: true"></a-plane>
+        <!-- Door slightly open -->
+        <a-box width="0.8" height="1.8" depth="0.1" position="-0.3 0.9 1.51" rotation="0 -20 0"
+          material="color: #1a0f05"></a-box>
+      </a-entity>
+
+      <!-- Two horses tied up (from script) -->
+      <a-entity position="2 0 2" horse-figure="color: #2a1a0a"></a-entity>
+      <a-entity position="4 0 1" rotation="0 -30 0" horse-figure="color: #1a1208"></a-entity>
+
+      <!-- SARA (Mother) - protective stance near children -->
+      <a-entity position="-2 0 3" rotation="0 180 0">
+        <a-entity human-figure="height: 1.65; color: #1a1a1a; pose: standing"></a-entity>
+        <!-- Dress silhouette -->
+        <a-cone radius-bottom="0.4" radius-top="0.15" height="0.8" position="0 0.5 0"
+          material="color: #1a1a1a; flatShading: true"></a-cone>
+      </a-entity>
+
+      <!-- Three children huddled (DAUGHTER 15, SON 11, SON 8) -->
+      <a-entity position="-1 0 4" rotation="0 200 0">
+        <a-entity position="-0.4 0 0" human-figure="height: 1.5; color: #151515; pose: standing"></a-entity>
+        <a-entity position="0.3 0 0.2" human-figure="height: 1.3; color: #151515; pose: standing"></a-entity>
+        <a-entity position="0.1 0 -0.3" human-figure="height: 1.1; color: #151515; pose: standing"></a-entity>
+      </a-entity>
+
+      <!-- Ominous traveler silhouette in doorway -->
+      <a-entity position="-6.3 0 1.4" rotation="0 180 0">
+        <a-entity human-figure="height: 1.8; color: #0a0505; pose: standing"></a-entity>
+      </a-entity>
+
+      <!-- Lantern light sources -->
+      <a-light type="point" color="#ff6633" intensity="0.5" distance="8" position="-6 2 0"></a-light>
+
+      <!-- Cottonwood tree (mentioned in script) -->
+      <a-entity position="8 0 -3">
+        <a-cylinder radius="0.4" height="5" position="0 2.5 0" material="color: #2a1a0a"></a-cylinder>
+        <a-sphere radius="3" position="0 5.5 0" material="color: #1a2a1a; flatShading: true; opacity: 0.9"></a-sphere>
+      </a-entity>
+
+      <!-- Pig pen in distance -->
+      <a-entity position="10 0 2">
+        <a-box width="3" height="0.5" depth="3" position="0 0.25 0"
+          material="color: #3a2a1a; wireframe: true; wireframeLinewidth: 2"></a-box>
+      </a-entity>
+
+      <!-- Ground fog/mist -->
+      <a-plane width="50" height="50" rotation="-90 0 0" position="0 0.05 0"
+        material="color: #2a1a0a; opacity: 0.3; transparent: true"></a-plane>
+    </a-entity>
+
+    <!-- Native Camp for 1864 Native Settlement -->
+    <a-entity id="native-camp" position="0 0 -15" visible="false">
+      <!-- Multiple teepees in village layout -->
+      <a-entity position="-8 0 0">
+        <a-cone radius-bottom="2" radius-top="0" height="5" material="color: #c9a977; flatShading: true; side: double"></a-cone>
+        <a-cylinder radius="0.08" height="6" position="0 3 0" material="color: #4a3a2a"></a-cylinder>
+      </a-entity>
+      <a-entity position="-4 0 3">
+        <a-cone radius-bottom="2.2" radius-top="0" height="5.5" material="color: #b89966; flatShading: true; side: double"></a-cone>
+        <a-cylinder radius="0.08" height="6.5" position="0 3.25 0" material="color: #4a3a2a"></a-cylinder>
+      </a-entity>
+      <a-entity position="0 0 0">
+        <a-cone radius-bottom="2.5" radius-top="0" height="6" material="color: #d4aa77; flatShading: true; side: double"></a-cone>
+        <a-cylinder radius="0.08" height="7" position="0 3.5 0" material="color: #4a3a2a"></a-cylinder>
+      </a-entity>
+      <a-entity position="5 0 2">
+        <a-cone radius-bottom="1.8" radius-top="0" height="4.5" material="color: #c49a67; flatShading: true; side: double"></a-cone>
+        <a-cylinder radius="0.08" height="5.5" position="0 2.75 0" material="color: #4a3a2a"></a-cylinder>
+      </a-entity>
+      <a-entity position="8 0 -2">
+        <a-cone radius-bottom="2" radius-top="0" height="5" material="color: #b99a77; flatShading: true; side: double"></a-cone>
+        <a-cylinder radius="0.08" height="6" position="0 3 0" material="color: #4a3a2a"></a-cylinder>
+      </a-entity>
+
+      <!-- Central campfire with gathering -->
+      <a-entity position="0 0 8">
+        <!-- Fire pit -->
+        <a-cylinder radius="0.8" height="0.2" position="0 0.1 0" material="color: #2a1a0a"></a-cylinder>
+        <!-- Fire glow -->
+        <a-sphere radius="0.4" position="0 0.5 0"
+          material="color: #ff4400; emissive: #ff2200; emissiveIntensity: 1; transparent: true; opacity: 0.9"
+          animation="property: scale; to: 1.2 1.4 1.2; dur: 300; dir: alternate; loop: true"></a-sphere>
+        <a-sphere radius="0.25" position="0 0.7 0"
+          material="color: #ffaa00; emissive: #ff6600; emissiveIntensity: 1; transparent: true; opacity: 0.8"
+          animation="property: scale; to: 0.8 1.2 0.8; dur: 200; dir: alternate; loop: true"></a-sphere>
+        <a-light type="point" color="#ff6633" intensity="1" distance="15" position="0 1 0"
+          animation="property: intensity; to: 0.6; dur: 500; dir: alternate; loop: true"></a-light>
+
+        <!-- ELU - 50 year old Native woman, wise presence -->
+        <a-entity position="-2 0 1" rotation="0 45 0">
+          <a-entity human-figure="height: 1.6; color: #3a2a1a; pose: sitting"></a-entity>
+        </a-entity>
+
+        <!-- KACHINA - another elder -->
+        <a-entity position="-1.5 0 2" rotation="0 30 0">
+          <a-entity human-figure="height: 1.55; color: #4a3a2a; pose: sitting"></a-entity>
+        </a-entity>
+
+        <!-- SARA and MARY (welcomed into tribe) -->
+        <a-entity position="1.5 0 1.5" rotation="0 -30 0">
+          <a-entity human-figure="height: 1.65; color: #2a2a2a; pose: sitting"></a-entity>
+        </a-entity>
+        <a-entity position="2.2 0 2" rotation="0 -45 0">
+          <a-entity human-figure="height: 1.5; color: #2a2a2a; pose: sitting"></a-entity>
+        </a-entity>
+
+        <!-- Elder chief TOOCI'EIT working on obsidian (from script) -->
+        <a-entity position="0 0 3" rotation="0 0 0">
+          <a-entity human-figure="height: 1.7; color: #3a2a1a; pose: sitting"></a-entity>
+          <!-- Small obsidian piece he's working on -->
+          <a-dodecahedron radius="0.1" position="0.3 0.4 0.3"
+            material="color: #0a0a0a; metalness: 0.9; roughness: 0.1; emissive: #1a0a2e; emissiveIntensity: 0.3"></a-dodecahedron>
+        </a-entity>
+
+        <!-- Children playing nearby -->
+        <a-entity position="4 0 0" rotation="0 -90 0">
+          <a-entity human-figure="height: 1.3; color: #4a3a2a; pose: standing"></a-entity>
+        </a-entity>
+        <a-entity position="4.5 0 1" rotation="0 -120 0">
+          <a-entity human-figure="height: 1.1; color: #4a3a2a; pose: standing"></a-entity>
+        </a-entity>
+      </a-entity>
+
+      <!-- Stream in distance (mentioned in script) -->
+      <a-plane width="3" height="30" rotation="-90 45 0" position="15 0.05 10"
+        material="color: #4a6a8a; opacity: 0.6; transparent: true; metalness: 0.8"></a-plane>
+
+      <!-- Horses in background -->
+      <a-entity position="-12 0 5" rotation="0 45 0" horse-figure="color: #4a3a2a"></a-entity>
+      <a-entity position="-10 0 7" rotation="0 30 0" horse-figure="color: #3a2a1a"></a-entity>
+    </a-entity>
+
+    <!-- Burial Scene - Sara buries the obsidian (1864) -->
+    <a-entity id="burial-scene" position="0 0 -12" visible="false">
+      <!-- Somber twilight plains -->
+      <a-plane width="100" height="100" rotation="-90 0 0" position="0 0.01 0"
+        material="color: #2a2218; opacity: 0.5; transparent: true"></a-plane>
+
+      <!-- Sara kneeling, burying the obsidian -->
+      <a-entity position="0 0 0" rotation="0 180 0">
+        <a-entity human-figure="height: 1.65; color: #1a1a1a; pose: kneeling"></a-entity>
+        <!-- Sara's tattered dress -->
+        <a-cone radius-bottom="0.5" radius-top="0.2" height="0.6" position="0 0.3 0"
+          material="color: #1a1a1a; flatShading: true"></a-cone>
+      </a-entity>
+
+      <!-- Freshly dug hole with mound -->
+      <a-entity position="0 0 1">
+        <!-- Dirt mound -->
+        <a-sphere radius="0.3" position="0.3 0.1 0"
+          material="color: #3a2a1a; flatShading: true"
+          scale="1.5 0.4 1"></a-sphere>
+        <!-- Hole -->
+        <a-circle radius="0.25" rotation="-90 0 0" position="-0.1 0.02 0"
+          material="color: #0a0805; opacity: 0.9"></a-circle>
+        <!-- Obsidian glowing faintly in the hole -->
+        <a-dodecahedron radius="0.08" position="-0.1 0.05 0"
+          material="color: #0a0a0a; metalness: 0.9; roughness: 0.1; emissive: #1a0a2e; emissiveIntensity: 0.6"
+          animation="property: material.emissiveIntensity; to: 0.2; dur: 2000; dir: alternate; loop: true"></a-dodecahedron>
+      </a-entity>
+
+      <!-- Mary standing behind, watching -->
+      <a-entity position="-2 0 -2" rotation="0 30 0">
+        <a-entity human-figure="height: 1.5; color: #151515; pose: standing"></a-entity>
+      </a-entity>
+
+      <!-- Children huddled together -->
+      <a-entity position="2 0 -2" rotation="0 -20 0">
+        <a-entity position="0 0 0" human-figure="height: 1.3; color: #151515; pose: standing"></a-entity>
+        <a-entity position="0.5 0 0.2" human-figure="height: 1.1; color: #151515; pose: standing"></a-entity>
+      </a-entity>
+
+      <!-- Lonely tree silhouette -->
+      <a-entity position="-8 0 5">
+        <a-cylinder radius="0.3" height="4" position="0 2 0" material="color: #1a1008"></a-cylinder>
+        <!-- Bare branches -->
+        <a-cylinder radius="0.08" height="2" position="0 4 0" rotation="0 0 30" material="color: #1a1008"></a-cylinder>
+        <a-cylinder radius="0.06" height="1.5" position="0 3.5 0" rotation="0 45 -25" material="color: #1a1008"></a-cylinder>
+        <a-cylinder radius="0.05" height="1" position="0 4.2 0" rotation="0 -30 40" material="color: #1a1008"></a-cylinder>
+      </a-entity>
+
+      <!-- Distant glow of the burning homestead -->
+      <a-sphere radius="2" position="20 1 -30"
+        material="color: #ff4400; emissive: #ff2200; emissiveIntensity: 0.3; transparent: true; opacity: 0.3"
+        animation="property: material.emissiveIntensity; to: 0.5; dur: 1500; dir: alternate; loop: true"></a-sphere>
+
+      <!-- Somber lighting -->
+      <a-light type="point" color="#4a3a2a" intensity="0.4" distance="10" position="0 2 0"></a-light>
+      <a-light type="directional" color="#301a10" intensity="0.3" position="-1 1 1"></a-light>
+    </a-entity>
+
+    <!-- 1975 Discovery Scene - Louise finding the rock -->
+    <a-entity id="discovery-scene" position="0 0 -12" visible="false">
+      <!-- Open plains atmosphere -->
+      <a-plane width="100" height="100" rotation="-90 0 0" position="0 0.01 0"
+        material="color: #8b7355; opacity: 0.4; transparent: true"></a-plane>
+
+      <!-- LOUISE on horseback - the moment of discovery -->
+      <a-entity position="-4 0 0" rotation="0 90 0">
+        <a-entity horse-figure="color: #3a2a1a"></a-entity>
+        <!-- Louise riding -->
+        <a-entity position="0 1.8 0" human-figure="height: 1.6; color: #2a2a3a; pose: horseback"></a-entity>
+      </a-entity>
+
+      <!-- RAY in distance on his horse -->
+      <a-entity position="8 0 -8" rotation="0 -45 0">
+        <a-entity horse-figure="color: #4a3a2a"></a-entity>
+        <a-entity position="0 1.8 0" human-figure="height: 1.75; color: #3a3a3a; pose: horseback"></a-entity>
+      </a-entity>
+
+      <!-- Cattle in background -->
+      <a-entity id="cattle" position="15 0 -5">
+        <a-box width="1.5" height="1" depth="0.8" position="0 0.5 0" material="color: #3a2a1a; flatShading: true"></a-box>
+        <a-box width="1.5" height="1" depth="0.8" position="3 0.5 2" material="color: #4a3a2a; flatShading: true"></a-box>
+        <a-box width="1.5" height="1" depth="0.8" position="2 0.5 -1" material="color: #2a1a0a; flatShading: true"></a-box>
+      </a-entity>
+
+      <!-- Sumac bushes where rock is found (from script) -->
+      <a-entity position="0 0 2">
+        <a-sphere radius="0.8" position="0 0.5 0" material="color: #4a5a3a; flatShading: true"></a-sphere>
+        <a-sphere radius="0.6" position="0.5 0.4 0.3" material="color: #3a4a2a; flatShading: true"></a-sphere>
+        <a-sphere radius="0.5" position="-0.4 0.35 0.2" material="color: #5a6a4a; flatShading: true"></a-sphere>
+        <!-- Glint of light indicating the obsidian -->
+        <a-sphere radius="0.05" position="0.1 0.2 0.4"
+          material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"
+          animation="property: material.emissiveIntensity; to: 0.2; dur: 800; dir: alternate; loop: true"></a-sphere>
+      </a-entity>
+
+      <!-- Dust particles in sunlight -->
+      <a-entity position="0 2 0">
+        <a-sphere radius="0.02" position="1 0 0.5" material="color: #ffeecc; emissive: #ffeecc; emissiveIntensity: 0.5; opacity: 0.6; transparent: true"
+          animation="property: position; to: 1.5 0.5 0; dur: 4000; loop: true"></a-sphere>
+        <a-sphere radius="0.015" position="-0.5 0.3 1" material="color: #ffeecc; emissive: #ffeecc; emissiveIntensity: 0.5; opacity: 0.5; transparent: true"
+          animation="property: position; to: -1 0.8 0.5; dur: 5000; loop: true"></a-sphere>
+        <a-sphere radius="0.02" position="0.3 -0.2 0.8" material="color: #ffeecc; emissive: #ffeecc; emissiveIntensity: 0.5; opacity: 0.6; transparent: true"
+          animation="property: position; to: 0.8 0.3 0.3; dur: 3500; loop: true"></a-sphere>
+      </a-entity>
+
+      <!-- Warm sun rays -->
+      <a-light type="directional" color="#ffcc66" intensity="1.2" position="5 10 5"></a-light>
+    </a-entity>
+
+    <!-- Concert Stage for 2025 -->
+    <a-entity id="concert-stage" position="0 0 -20" visible="false">
+      <!-- Massive stage -->
+      <a-box width="30" height="2" depth="15" position="0 1 -5" material="color: #0a0a0a; metalness: 0.3"></a-box>
+
+      <!-- OBSIDIAN logo back screen -->
+      <a-box width="28" height="12" depth="0.5" position="0 8 -12"
+        material="color: #0a0a12; emissive: #1a0a2e; emissiveIntensity: 0.3"></a-box>
+
+      <!-- Moving stage lights -->
+      <a-entity id="stage-lights">
+        <a-cone radius-bottom="0.5" radius-top="0.1" height="1" position="-10 14 -10" rotation="180 0 0"
+          material="color: #ff0066; emissive: #ff0066; emissiveIntensity: 2"
+          animation="property: rotation; to: 160 45 0; dur: 2000; dir: alternate; loop: true"></a-cone>
+        <a-cone radius-bottom="0.5" radius-top="0.1" height="1" position="0 14 -10" rotation="180 0 0"
+          material="color: #00ffaa; emissive: #00ffaa; emissiveIntensity: 2"
+          animation="property: rotation; to: 200 -30 0; dur: 1500; dir: alternate; loop: true"></a-cone>
+        <a-cone radius-bottom="0.5" radius-top="0.1" height="1" position="10 14 -10" rotation="180 0 0"
+          material="color: #8a2be2; emissive: #8a2be2; emissiveIntensity: 2"
+          animation="property: rotation; to: 160 -45 0; dur: 2500; dir: alternate; loop: true"></a-cone>
+      </a-entity>
+
+      <!-- Light beams -->
+      <a-cylinder radius="0.3" height="20" position="-8 10 -5" rotation="15 0 10"
+        material="color: #ff0066; emissive: #ff0066; emissiveIntensity: 0.5; transparent: true; opacity: 0.15"
+        animation="property: rotation; to: -15 0 -10; dur: 3000; dir: alternate; loop: true"></a-cylinder>
+      <a-cylinder radius="0.3" height="20" position="8 10 -5" rotation="-15 0 -10"
+        material="color: #00ffaa; emissive: #00ffaa; emissiveIntensity: 0.5; transparent: true; opacity: 0.15"
+        animation="property: rotation; to: 15 0 10; dur: 2500; dir: alternate; loop: true"></a-cylinder>
+      <a-cylinder radius="0.4" height="25" position="0 12 -5" rotation="0 0 0"
+        material="color: #8a2be2; emissive: #8a2be2; emissiveIntensity: 0.5; transparent: true; opacity: 0.2"
+        animation="property: material.opacity; to: 0.05; dur: 1000; dir: alternate; loop: true"></a-cylinder>
+
+      <!-- PHILEO center stage - triumphant moment -->
+      <a-entity position="0 2.1 -3" rotation="0 180 0">
+        <a-entity human-figure="height: 1.75; color: #1a1a1a; pose: standing"></a-entity>
+        <!-- Shell toe Adidas suggested by foot shapes -->
+        <a-box width="0.15" height="0.08" depth="0.25" position="-0.1 0.04 0.05" material="color: #ffffff"></a-box>
+        <a-box width="0.15" height="0.08" depth="0.25" position="0.1 0.04 0.05" material="color: #ffffff"></a-box>
+      </a-entity>
+
+      <!-- VIP Suite Area -->
+      <a-entity id="vip-suite" position="8 2.1 5">
+        <!-- VIP platform -->
+        <a-box width="6" height="0.2" depth="4" position="1 -0.1 0"
+          material="color: #1a1a2a; metalness: 0.5"></a-box>
+
+        <!-- Velvet rope barrier suggestion -->
+        <a-cylinder radius="0.03" height="0.8" position="-1 0.4 2" material="color: #8b0000"></a-cylinder>
+        <a-cylinder radius="0.03" height="0.8" position="4 0.4 2" material="color: #8b0000"></a-cylinder>
+
+        <!-- LYNN (wife) in purple gown - center of family -->
+        <a-entity position="0 0 0" rotation="0 -135 0">
+          <a-entity human-figure="height: 1.65; color: #2a1a3a; pose: standing"></a-entity>
+          <!-- Elegant purple gown (from script) -->
+          <a-cone radius-bottom="0.5" radius-top="0.15" height="1" position="0 0.5 0"
+            material="color: #4a2a6a; flatShading: true; emissive: #2a1a3a; emissiveIntensity: 0.2"></a-cone>
+          <!-- Necklace with small obsidian -->
+          <a-sphere radius="0.03" position="0 1.4 0.1"
+            material="color: #0a0a0a; metalness: 0.9; emissive: #1a0a2e; emissiveIntensity: 0.4"></a-sphere>
+        </a-entity>
+
+        <!-- Three daughters in elegant attire -->
+        <a-entity position="1 0 0.5" rotation="0 -120 0">
+          <a-entity human-figure="height: 1.6; color: #2a2a2a; pose: standing"></a-entity>
+          <a-cone radius-bottom="0.4" radius-top="0.12" height="0.9" position="0 0.45 0"
+            material="color: #2a2a3a; flatShading: true"></a-cone>
+        </a-entity>
+        <a-entity position="1.5 0 -0.5" rotation="0 -150 0">
+          <a-entity human-figure="height: 1.55; color: #2a2a2a; pose: standing"></a-entity>
+          <a-cone radius-bottom="0.38" radius-top="0.12" height="0.85" position="0 0.42 0"
+            material="color: #2a2a3a; flatShading: true"></a-cone>
+        </a-entity>
+        <a-entity position="2 0 0" rotation="0 -130 0">
+          <a-entity human-figure="height: 1.5; color: #2a2a2a; pose: standing"></a-entity>
+          <a-cone radius-bottom="0.35" radius-top="0.1" height="0.8" position="0 0.4 0"
+            material="color: #2a2a3a; flatShading: true"></a-cone>
+        </a-entity>
+
+        <!-- JJ with the ritual bag containing obsidian -->
+        <a-entity position="-2 0 -1" rotation="0 -90 0">
+          <a-entity human-figure="height: 1.65; color: #1a1a1a; pose: standing"></a-entity>
+          <!-- The ritual bag - leather pouch -->
+          <a-box width="0.25" height="0.2" depth="0.12" position="0.25 0.75 0"
+            material="color: #2a1a0a; flatShading: true"></a-box>
+          <!-- Obsidian glow visible through bag -->
+          <a-sphere radius="0.04" position="0.25 0.75 0.08"
+            material="color: #8a2be2; emissive: #8a2be2; emissiveIntensity: 0.5; transparent: true; opacity: 0.6"
+            animation="property: material.emissiveIntensity; to: 0.2; dur: 1500; dir: alternate; loop: true"></a-sphere>
+        </a-entity>
+
+        <!-- Champagne glasses on small table -->
+        <a-entity position="3 0 -1">
+          <a-cylinder radius="0.4" height="0.8" position="0 0.4 0" material="color: #1a1a1a"></a-cylinder>
+          <a-cylinder radius="0.025" height="0.15" position="0.1 0.9 0" material="color: #ffcc66; emissive: #ffaa33; emissiveIntensity: 0.3; transparent: true; opacity: 0.7"></a-cylinder>
+          <a-cylinder radius="0.025" height="0.15" position="-0.1 0.9 0.08" material="color: #ffcc66; emissive: #ffaa33; emissiveIntensity: 0.3; transparent: true; opacity: 0.7"></a-cylinder>
+        </a-entity>
+
+        <!-- Warm accent lighting for VIP area -->
+        <a-light type="point" color="#ffaa66" intensity="0.3" distance="8" position="1 2 0"></a-light>
+      </a-entity>
+
+      <!-- Orchestra silhouettes -->
+      <a-entity position="-8 2.1 2">
+        <a-entity position="0 0 0" human-figure="height: 1.2; color: #0a0a0a; pose: sitting"></a-entity>
+        <a-entity position="1 0 0" human-figure="height: 1.2; color: #0a0a0a; pose: sitting"></a-entity>
+        <a-entity position="2 0 0" human-figure="height: 1.2; color: #0a0a0a; pose: sitting"></a-entity>
+        <a-entity position="0.5 0 1" human-figure="height: 1.2; color: #0a0a0a; pose: sitting"></a-entity>
+        <a-entity position="1.5 0 1" human-figure="height: 1.2; color: #0a0a0a; pose: sitting"></a-entity>
+      </a-entity>
+
+      <!-- SOLOMON at podium -->
+      <a-entity position="-5 2.1 0" rotation="0 180 0">
+        <a-entity human-figure="height: 1.7; color: #0a0a0a; pose: standing"></a-entity>
+        <a-box width="0.5" height="1.2" depth="0.3" position="0 0.6 0.3" material="color: #1a1a1a"></a-box>
+      </a-entity>
+
+      <!-- Massive crowd -->
+      <a-entity id="crowd" position="0 0 20">
+        <!-- Front rows -->
+        <a-entity position="0 0 0">
+          <a-entity position="-4 0 0" human-figure="height: 1.7; color: #0a0a0a; pose: standing"></a-entity>
+          <a-entity position="-2.5 0 0" human-figure="height: 1.6; color: #0a0a0a; pose: standing"></a-entity>
+          <a-entity position="-1 0 0" human-figure="height: 1.75; color: #0a0a0a; pose: standing"></a-entity>
+          <a-entity position="0.5 0 0" human-figure="height: 1.65; color: #0a0a0a; pose: standing"></a-entity>
+          <a-entity position="2 0 0" human-figure="height: 1.7; color: #0a0a0a; pose: standing"></a-entity>
+          <a-entity position="3.5 0 0" human-figure="height: 1.6; color: #0a0a0a; pose: standing"></a-entity>
+        </a-entity>
+        <!-- More rows fading back -->
+        <a-entity position="0 0 3">
+          <a-entity position="-5 0 0" human-figure="height: 1.65; color: #080808; pose: standing"></a-entity>
+          <a-entity position="-3 0 0" human-figure="height: 1.7; color: #080808; pose: standing"></a-entity>
+          <a-entity position="-1 0 0" human-figure="height: 1.6; color: #080808; pose: standing"></a-entity>
+          <a-entity position="1 0 0" human-figure="height: 1.7; color: #080808; pose: standing"></a-entity>
+          <a-entity position="3 0 0" human-figure="height: 1.65; color: #080808; pose: standing"></a-entity>
+          <a-entity position="5 0 0" human-figure="height: 1.7; color: #080808; pose: standing"></a-entity>
+        </a-entity>
+        <!-- Abstract crowd mass in back -->
+        <a-box width="20" height="1.5" depth="10" position="0 0.75 10"
+          material="color: #050505; flatShading: true"></a-box>
+      </a-entity>
+
+      <!-- Floating phones/lights in crowd -->
+      <a-entity id="phone-lights" position="0 1.5 22">
+        <a-sphere radius="0.03" position="-3 0 0" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"
+          animation="property: position; to: -3 0.2 0; dur: 1500; dir: alternate; loop: true"></a-sphere>
+        <a-sphere radius="0.03" position="0 0.1 1" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"
+          animation="property: position; to: 0 -0.1 1; dur: 1200; dir: alternate; loop: true"></a-sphere>
+        <a-sphere radius="0.03" position="2.5 0 0.5" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"
+          animation="property: position; to: 2.5 0.15 0.5; dur: 1800; dir: alternate; loop: true"></a-sphere>
+        <a-sphere radius="0.03" position="-1.5 0.1 2" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"
+          animation="property: position; to: -1.5 -0.05 2; dur: 1400; dir: alternate; loop: true"></a-sphere>
+      </a-entity>
+
+      <!-- Stars in night sky -->
+      <a-entity id="stars" position="0 30 -30">
+        <a-sphere radius="0.1" position="-20 10 0" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"></a-sphere>
+        <a-sphere radius="0.08" position="-15 15 5" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.8"></a-sphere>
+        <a-sphere radius="0.12" position="-8 12 -5" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"></a-sphere>
+        <a-sphere radius="0.06" position="0 18 0" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.7"></a-sphere>
+        <a-sphere radius="0.1" position="10 14 5" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9"></a-sphere>
+        <a-sphere radius="0.08" position="18 11 -3" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 1"></a-sphere>
+        <a-sphere radius="0.07" position="5 20 8" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.8"></a-sphere>
+        <a-sphere radius="0.09" position="-12 16 10" material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.9"></a-sphere>
+      </a-entity>
+
+      <!-- Stage lighting -->
+      <a-light type="point" color="#ff0066" intensity="0.5" distance="30" position="-10 10 -5"></a-light>
+      <a-light type="point" color="#00ffaa" intensity="0.5" distance="30" position="10 10 -5"></a-light>
+      <a-light type="point" color="#8a2be2" intensity="0.8" distance="40" position="0 15 -5"></a-light>
+    </a-entity>
+
+    <!-- The Obsidian Rock - Central Interactive Element -->
+    <a-entity id="obsidian-group" position="0 0.5 0">
+      <!-- Base rock formation -->
+      <a-dodecahedron 
+        id="obsidian-rock"
+        class="interactive"
+        position="0 0.4 0"
+        radius="0.35"
+        material="
+          color: #050508;
+          metalness: 1.0;
+          roughness: 0.05;
+          emissive: #1a0a2e;
+          emissiveIntensity: 0.4;
+          envMap: #sky;
+        "
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear"
+        animation__hover="property: material.emissiveIntensity; startEvents: mouseenter; to: 0.8; dur: 300"
+        animation__leave="property: material.emissiveIntensity; startEvents: mouseleave; to: 0.3; dur: 300"
+        obsidian-interaction>
+      </a-dodecahedron>
+
+      <!-- Inner glow core -->
+      <a-icosahedron
+        position="0 0.4 0"
+        radius="0.2"
+        material="
+          color: #8a2be2;
+          emissive: #8a2be2;
+          emissiveIntensity: 0.5;
+          opacity: 0.3;
+          transparent: true;
+        "
+        animation="property: rotation; to: 360 0 360; loop: true; dur: 15000; easing: linear">
+      </a-icosahedron>
+
+      <!-- Floating orbs around obsidian -->
+      <a-entity id="orbs">
+        <a-sphere position="0.5 0.6 0" radius="0.03" material="color: #8a2be2; emissive: #8a2be2; emissiveIntensity: 0.8; opacity: 0.7; transparent: true" animation="property: position; to: -0.5 0.8 0.3; dur: 4000; easing: easeInOutSine; loop: true; dir: alternate"></a-sphere>
+        <a-sphere position="-0.4 0.5 0.3" radius="0.025" material="color: #4a0080; emissive: #4a0080; emissiveIntensity: 0.8; opacity: 0.6; transparent: true" animation="property: position; to: 0.4 0.7 -0.3; dur: 3500; easing: easeInOutSine; loop: true; dir: alternate"></a-sphere>
+        <a-sphere position="0.3 0.7 -0.4" radius="0.02" material="color: #8a2be2; emissive: #8a2be2; emissiveIntensity: 0.9; opacity: 0.8; transparent: true" animation="property: position; to: -0.3 0.5 0.4; dur: 5000; easing: easeInOutSine; loop: true; dir: alternate"></a-sphere>
+      </a-entity>
+
+      <!-- Ground glow beneath rock -->
+      <a-circle
+        position="0 0.01 0"
+        rotation="-90 0 0"
+        radius="1"
+        material="
+          color: #8a2be2;
+          emissive: #8a2be2;
+          emissiveIntensity: 0.3;
+          opacity: 0.4;
+          transparent: true;
+        "
+        animation="property: material.opacity; to: 0.2; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine">
+      </a-circle>
+    </a-entity>
+
+    <!-- Narrative Text Element -->
+    <a-entity id="narrative-text" position="0 2.5 -3" visible="false">
+      <a-plane width="4.5" height="2.5" position="0 0 -0.05"
+        material="color: #000000; opacity: 0.6; transparent: true"></a-plane>
+      <a-text
+        value="1864 - Colorado Territory\n\nIn the fabric of time, there are threads\nwoven with the stories of those who\nfeel overlooked..."
+        align="center"
+        color="#ffffff"
+        width="4"
+        opacity="0"
+        animation__fadein="property: opacity; to: 1; dur: 1000; startEvents: show"
+        animation__fadeout="property: opacity; to: 0; dur: 1000; startEvents: hide">
+      </a-text>
+    </a-entity>
+
+    <!-- Era indicator with chapter info -->
+    <a-entity id="era-indicator" position="0 3.5 -4">
+      <a-text
+        id="era-text"
+        value="OBSIDIAN: Epoch to Flock\nClick the rock to begin"
+        align="center"
+        color="#8a2be2"
+        width="6"
+        opacity="0.8"
+        font="mozillavr">
+      </a-text>
+    </a-entity>
+
+    <!-- Progress bar -->
+    <a-entity id="progress-bar" position="0 -1.5 -3" visible="false">
+      <!-- Background -->
+      <a-box id="progress-bg" width="3" height="0.08" depth="0.02"
+        material="color: #1a1a2a; opacity: 0.8; transparent: true"></a-box>
+      <!-- Fill -->
+      <a-box id="progress-fill" width="0" height="0.06" depth="0.03" position="-1.5 0 0.01"
+        material="color: #8a2be2; emissive: #8a2be2; emissiveIntensity: 0.5"
+        geometry="primitive: box; width: 0; height: 0.06; depth: 0.03"></a-box>
+      <!-- Chapter counter -->
+      <a-text id="chapter-counter" value="1 / 15" position="1.8 0 0" align="left" color="#888888" width="1.5"></a-text>
+    </a-entity>
+
+    <!-- Navigation hint -->
+    <a-entity id="nav-hint" position="0 -2 -3" visible="false">
+      <a-text value="Click the obsidian to continue..." align="center" color="#666666" width="2" opacity="0.6"></a-text>
+    </a-entity>
+
+    <!-- Ambient sound placeholder text -->
+    <a-entity id="audio-indicator" position="-3 1.5 -2">
+      <a-text
+        value="♪ Wind across the plains..."
+        align="center"
+        color="#666666"
+        width="2"
+        opacity="0.5">
+      </a-text>
+    </a-entity>
+
+    <!-- Time Period Markers (visible when rock is activated) -->
+    <a-entity id="time-markers" visible="false">
+      <!-- 1864 Homestead -->
+      <a-entity class="interactive" data-era="0" position="-2 1 -2" era-button>
+        <a-circle radius="0.3" color="#bc6c25" opacity="0.3" rotation="0 0 0"></a-circle>
+        <a-ring radius-inner="0.15" radius-outer="0.25" color="#bc6c25" opacity="0.9"
+          animation__hover="property: scale; startEvents: mouseenter; to: 1.3 1.3 1.3; dur: 200"
+          animation__leave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200"></a-ring>
+        <a-text value="1864" position="0 0.45 0" align="center" color="#bc6c25" width="2.5"></a-text>
+        <a-text value="Homestead" position="0 -0.4 0" align="center" color="#bc6c25" width="1.8" opacity="0.8"></a-text>
+      </a-entity>
+
+      <!-- 1864 Native Camp -->
+      <a-entity class="interactive" data-era="1" position="-0.7 1 -2" era-button>
+        <a-circle radius="0.3" color="#4a9960" opacity="0.3" rotation="0 0 0"></a-circle>
+        <a-ring radius-inner="0.15" radius-outer="0.25" color="#4a9960" opacity="0.9"
+          animation__hover="property: scale; startEvents: mouseenter; to: 1.3 1.3 1.3; dur: 200"
+          animation__leave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200"></a-ring>
+        <a-text value="1864" position="0 0.45 0" align="center" color="#4a9960" width="2.5"></a-text>
+        <a-text value="Native Camp" position="0 -0.4 0" align="center" color="#4a9960" width="1.8" opacity="0.8"></a-text>
+      </a-entity>
+
+      <!-- 1975 Discovery -->
+      <a-entity class="interactive" data-era="2" position="0.7 1 -2" era-button>
+        <a-circle radius="0.3" color="#daa520" opacity="0.3" rotation="0 0 0"></a-circle>
+        <a-ring radius-inner="0.15" radius-outer="0.25" color="#daa520" opacity="0.9"
+          animation__hover="property: scale; startEvents: mouseenter; to: 1.3 1.3 1.3; dur: 200"
+          animation__leave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200"></a-ring>
+        <a-text value="1975" position="0 0.45 0" align="center" color="#daa520" width="2.5"></a-text>
+        <a-text value="Discovery" position="0 -0.4 0" align="center" color="#daa520" width="1.8" opacity="0.8"></a-text>
+      </a-entity>
+
+      <!-- 2025 Premiere -->
+      <a-entity class="interactive" data-era="3" position="2 1 -2" era-button>
+        <a-circle radius="0.3" color="#00ffaa" opacity="0.3" rotation="0 0 0"></a-circle>
+        <a-ring radius-inner="0.15" radius-outer="0.25" color="#00ffaa" opacity="0.9"
+          animation__hover="property: scale; startEvents: mouseenter; to: 1.3 1.3 1.3; dur: 200"
+          animation__leave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200"></a-ring>
+        <a-text value="2025" position="0 0.45 0" align="center" color="#00ffaa" width="2.5"></a-text>
+        <a-text value="Premiere" position="0 -0.4 0" align="center" color="#00ffaa" width="1.8" opacity="0.8"></a-text>
+      </a-entity>
+    </a-entity>
+
+    <!-- Lighting -->
+    <a-light type="ambient" color="#404060" intensity="0.4"></a-light>
+    <a-light type="directional" color="#ffaa66" intensity="0.8" position="1 2 1"></a-light>
+    <a-light type="point" color="#8a2be2" intensity="0.6" position="0 1 0" distance="5"></a-light>
+
+    <!-- Fade transition overlay -->
+    <a-entity id="fade-overlay" position="0 0 -0.5">
+      <a-plane
+        id="fade-plane"
+        width="10"
+        height="10"
+        color="#000000"
+        opacity="0"
+        material="shader: flat; transparent: true; side: double"
+        animation__fadein="property: material.opacity; from: 0; to: 1; dur: 500; startEvents: fadeIn"
+        animation__fadeout="property: material.opacity; from: 1; to: 0; dur: 500; startEvents: fadeOut">
+      </a-plane>
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    // Loading screen handler
+    document.getElementById('enterBtn').addEventListener('click', function() {
+      document.getElementById('loadingScreen').classList.add('hidden');
+      // Try to enter VR if available
+      const scene = document.querySelector('a-scene');
+      if (scene.is('vr-mode')) return;
+      if (AFRAME.utils.device.checkHeadsetConnected()) {
+        scene.enterVR();
+      }
+    });
+
+    // Reusable human silhouette component
+    AFRAME.registerComponent('human-figure', {
+      schema: {
+        height: { default: 1.7 },
+        color: { default: '#0a0a0a' },
+        pose: { default: 'standing' } // standing, sitting, kneeling, horseback
+      },
+      init: function() {
+        const d = this.data;
+        const scale = d.height / 1.7;
+
+        // Head
+        const head = document.createElement('a-sphere');
+        head.setAttribute('radius', 0.12 * scale);
+        head.setAttribute('position', `0 ${1.6 * scale} 0`);
+        head.setAttribute('material', `color: ${d.color}; flatShading: true`);
+        this.el.appendChild(head);
+
+        // Torso
+        const torso = document.createElement('a-cylinder');
+        torso.setAttribute('radius', 0.15 * scale);
+        torso.setAttribute('height', 0.5 * scale);
+        torso.setAttribute('position', `0 ${1.15 * scale} 0`);
+        torso.setAttribute('material', `color: ${d.color}; flatShading: true`);
+        this.el.appendChild(torso);
+
+        // Hips/lower body
+        const hips = document.createElement('a-cylinder');
+        hips.setAttribute('radius', 0.13 * scale);
+        hips.setAttribute('height', 0.4 * scale);
+        if (d.pose === 'sitting' || d.pose === 'horseback') {
+          hips.setAttribute('position', `0 ${0.5 * scale} 0`);
+          hips.setAttribute('rotation', '90 0 0');
+        } else if (d.pose === 'kneeling') {
+          hips.setAttribute('position', `0 ${0.4 * scale} 0`);
+        } else {
+          hips.setAttribute('position', `0 ${0.65 * scale} 0`);
+        }
+        hips.setAttribute('material', `color: ${d.color}; flatShading: true`);
+        this.el.appendChild(hips);
+
+        // Legs
+        if (d.pose === 'standing') {
+          [-0.08, 0.08].forEach(x => {
+            const leg = document.createElement('a-cylinder');
+            leg.setAttribute('radius', 0.06 * scale);
+            leg.setAttribute('height', 0.5 * scale);
+            leg.setAttribute('position', `${x * scale} ${0.25 * scale} 0`);
+            leg.setAttribute('material', `color: ${d.color}; flatShading: true`);
+            this.el.appendChild(leg);
+          });
+        }
+
+        // Arms
+        [-0.22, 0.22].forEach((x, i) => {
+          const arm = document.createElement('a-cylinder');
+          arm.setAttribute('radius', 0.04 * scale);
+          arm.setAttribute('height', 0.4 * scale);
+          arm.setAttribute('position', `${x * scale} ${1.0 * scale} 0`);
+          arm.setAttribute('rotation', '0 0 ' + (i === 0 ? '15' : '-15'));
+          arm.setAttribute('material', `color: ${d.color}; flatShading: true`);
+          this.el.appendChild(arm);
+        });
+      }
+    });
+
+    // Horse silhouette component
+    AFRAME.registerComponent('horse-figure', {
+      schema: {
+        color: { default: '#1a1008' }
+      },
+      init: function() {
+        const c = this.data.color;
+
+        // Body
+        const body = document.createElement('a-cylinder');
+        body.setAttribute('radius', 0.4);
+        body.setAttribute('height', 1.8);
+        body.setAttribute('rotation', '0 0 90');
+        body.setAttribute('position', '0 1 0');
+        body.setAttribute('material', `color: ${c}; flatShading: true`);
+        this.el.appendChild(body);
+
+        // Neck
+        const neck = document.createElement('a-cylinder');
+        neck.setAttribute('radius', 0.15);
+        neck.setAttribute('height', 0.8);
+        neck.setAttribute('rotation', '0 0 -45');
+        neck.setAttribute('position', '0.7 1.4 0');
+        neck.setAttribute('material', `color: ${c}; flatShading: true`);
+        this.el.appendChild(neck);
+
+        // Head
+        const head = document.createElement('a-box');
+        head.setAttribute('width', 0.5);
+        head.setAttribute('height', 0.25);
+        head.setAttribute('depth', 0.2);
+        head.setAttribute('position', '1.1 1.7 0');
+        head.setAttribute('material', `color: ${c}; flatShading: true`);
+        this.el.appendChild(head);
+
+        // Legs
+        [[-0.5, -0.12], [-0.5, 0.12], [0.5, -0.12], [0.5, 0.12]].forEach(pos => {
+          const leg = document.createElement('a-cylinder');
+          leg.setAttribute('radius', 0.06);
+          leg.setAttribute('height', 0.9);
+          leg.setAttribute('position', `${pos[0]} 0.45 ${pos[1]}`);
+          leg.setAttribute('material', `color: ${c}; flatShading: true`);
+          this.el.appendChild(leg);
+        });
+
+        // Tail
+        const tail = document.createElement('a-cylinder');
+        tail.setAttribute('radius', 0.05);
+        tail.setAttribute('height', 0.6);
+        tail.setAttribute('rotation', '30 0 0');
+        tail.setAttribute('position', '-0.9 0.9 0');
+        tail.setAttribute('material', `color: ${c}; flatShading: true`);
+        this.el.appendChild(tail);
+      }
+    });
+
+    // Era button click component
+    AFRAME.registerComponent('era-button', {
+      init: function() {
+        const el = this.el;
+
+        // Multiple event types for better detection
+        ['click', 'mousedown'].forEach(eventType => {
+          el.addEventListener(eventType, (e) => {
+            e.stopPropagation();
+            const eraIndex = parseInt(el.getAttribute('data-era'));
+            console.log('Era button clicked:', eraIndex);
+            const event = new CustomEvent('era-change', { detail: { era: eraIndex } });
+            document.dispatchEvent(event);
+          });
+        });
+
+        // Visual feedback on hover
+        el.addEventListener('mouseenter', () => {
+          document.getElementById('cursor').setAttribute('material', 'color', '#ffcc00');
+        });
+
+        el.addEventListener('mouseleave', () => {
+          document.getElementById('cursor').setAttribute('material', 'color', 'white');
+        });
+      }
+    });
+
+    // Updated obsidian interaction with transitions
+    AFRAME.registerComponent('obsidian-interaction', {
+      init: function() {
+        const el = this.el;
+        const timeMarkers = document.getElementById('time-markers');
+        const narrativeText = document.getElementById('narrative-text');
+        const eraText = document.getElementById('era-text');
+        const fadePlane = document.getElementById('fade-plane');
+        const environment = document.querySelector('[environment]');
+        let isActivated = false;
+        let currentEra = 0;
+
+        // Story chapters following the screenplay's narrative arc
+        const chapters = [
+          {
+            chapter: 1,
+            year: '1864',
+            name: 'PROLOGUE',
+            subtitle: 'Colorado Territory',
+            color: '#bc6c25',
+            skyColor: '#1a0a05',
+            horizonColor: '#4a2510',
+            ambientColor: '#1a0500',
+            scene: 'cabin',
+            narrative: 'In the fabric of time,\nthere are threads woven with\nthe stories of those\nwho feel overlooked...\n\nForgotten in the margins of history.',
+            musicCue: '♪ Haunting strings fade in...'
+          },
+          {
+            chapter: 2,
+            year: '1864',
+            name: 'THE HOMESTEAD',
+            subtitle: 'A Family Under Siege',
+            color: '#bc6c25',
+            skyColor: '#1a0a05',
+            horizonColor: '#4a2510',
+            ambientColor: '#1a0500',
+            scene: 'cabin',
+            narrative: 'SARA shields her children\nas travelers darken the doorway.\n\n"When your husband gets back,\nthere won\'t be nothing left\nof you to be had."\n\n"I\'d be so lucky for him to be back."',
+            musicCue: '♪ Tension builds...'
+          },
+          {
+            chapter: 3,
+            year: '1864',
+            name: 'A MOTHER\'S FURY',
+            subtitle: 'The Fight',
+            color: '#8b0000',
+            skyColor: '#0a0505',
+            horizonColor: '#3a1510',
+            ambientColor: '#150000',
+            scene: 'cabin',
+            narrative: 'Sara fights back with\neverything she has.\n\nThe rifle. The knife.\nThe will to survive.\n\n"Get behind me, children.\nWhatever happens...\ndon\'t look."',
+            musicCue: '♪ Drums pound...'
+          },
+          {
+            chapter: 4,
+            year: '1864',
+            name: 'THE ESCAPE',
+            subtitle: 'Into the Unknown',
+            color: '#4a5568',
+            skyColor: '#1a1a2a',
+            horizonColor: '#2a3040',
+            ambientColor: '#101015',
+            scene: 'cabin',
+            narrative: 'Under cover of darkness,\nSara and her children flee.\n\nThe homestead burns behind them.\n\nMiles of wilderness ahead.\n\nNo home to return to.',
+            musicCue: '♪ Mournful wind...'
+          },
+          {
+            chapter: 5,
+            year: '1864',
+            name: 'SANCTUARY',
+            subtitle: 'The Native Settlement',
+            color: '#4a9960',
+            skyColor: '#4a6080',
+            horizonColor: '#d4a055',
+            ambientColor: '#2a3525',
+            scene: 'native-camp',
+            narrative: 'The Natives notice that\nthe four are no threat...\nand in extremely bad shape.\n\nThey are brought into the camp.\n\nWarmth. Food. Safety.',
+            musicCue: '♪ Gentle drums, healing chants...'
+          },
+          {
+            chapter: 6,
+            year: '1864',
+            name: 'THE WHITE WOMAN WARRIOR',
+            subtitle: 'A New Name',
+            color: '#4a9960',
+            skyColor: '#5a7090',
+            horizonColor: '#e4b065',
+            ambientColor: '#3a4535',
+            scene: 'native-camp',
+            narrative: 'ELU looks at SARA\nwith knowing eyes.\n\n"The White Woman Warrior."\n\nTOOCI\'EIT crafts a necklace\nfrom sacred obsidian.\n\n"This stone carries the spirits\nof those who came before."',
+            musicCue: '♪ Sacred melody rises...'
+          },
+          {
+            chapter: 7,
+            year: '1864',
+            name: 'THE ATTACK',
+            subtitle: 'Sand Creek',
+            color: '#660000',
+            skyColor: '#200505',
+            horizonColor: '#401010',
+            ambientColor: '#100000',
+            scene: 'native-camp',
+            narrative: 'The US Cavalry descends.\n\nShots ring out.\nScreams pierce the dawn.\n\nElu falls protecting others.\n\n"Take the children.\nRun. RUN!"',
+            musicCue: '♪ Chaos, gunfire, screams...'
+          },
+          {
+            chapter: 8,
+            year: '1864',
+            name: 'BURIED HOPE',
+            subtitle: 'The Promise',
+            color: '#3a2a1a',
+            skyColor: '#2a2a3a',
+            horizonColor: '#4a3a2a',
+            ambientColor: '#1a1510',
+            scene: 'burial-scene',
+            narrative: 'Sara buries the obsidian\nbeneath the prairie soil.\n\n"Someday, someone will\nfind you again."\n\n"And they\'ll know...\nwe were here."',
+            musicCue: '♪ Piano, single notes of farewell...'
+          },
+          {
+            chapter: 9,
+            year: '1975',
+            name: 'ONE HUNDRED YEARS LATER',
+            subtitle: 'Eastern Plains of Colorado',
+            color: '#daa520',
+            skyColor: '#6a8caf',
+            horizonColor: '#daa520',
+            ambientColor: '#4a4a3a',
+            scene: 'discovery-scene',
+            narrative: 'LOUISE rides across land\nher family has worked\nfor generations.\n\nThe morning sun catches\nsomething in the brush.',
+            musicCue: '♪ Acoustic guitar, hopeful...'
+          },
+          {
+            chapter: 10,
+            year: '1975',
+            name: 'THE DISCOVERY',
+            subtitle: 'What in the World?',
+            color: '#daa520',
+            skyColor: '#7a9cbf',
+            horizonColor: '#eab530',
+            ambientColor: '#5a5a4a',
+            scene: 'discovery-scene',
+            narrative: 'Her horse sidesteps.\nA glimmer catches her eye.\n\n"Well, what in the world\ndo we have here?"\n\nThe obsidian emerges\nfrom 100 years of silence.',
+            musicCue: '♪ Strings swell with wonder...'
+          },
+          {
+            chapter: 11,
+            year: '1975',
+            name: 'PASSED DOWN',
+            subtitle: 'Legacy',
+            color: '#b8860b',
+            skyColor: '#5a7c9f',
+            horizonColor: '#c9952a',
+            ambientColor: '#3a3a2a',
+            scene: 'discovery-scene',
+            narrative: 'Louise gives the stone\nto her daughter LYNN.\n\nLynn gives it to her husband\nPHILEO.\n\n"There\'s something special\nabout this rock.\nI can feel it."',
+            musicCue: '♪ Family theme emerges...'
+          },
+          {
+            chapter: 12,
+            year: '2025',
+            name: 'PREMIERE NIGHT',
+            subtitle: '50 Years Later',
+            color: '#00ffaa',
+            skyColor: '#050510',
+            horizonColor: '#0a0a20',
+            ambientColor: '#05050a',
+            scene: 'concert-stage',
+            narrative: 'The arena pulses with energy.\n\n15,000 people.\nOrchestra ready.\n\nPHILEO stands backstage,\nthe obsidian in his palm.',
+            musicCue: '♪ Orchestra tuning, crowd murmur...'
+          },
+          {
+            chapter: 13,
+            year: '2025',
+            name: 'THE MOMENT',
+            subtitle: 'All the Threads Connect',
+            color: '#00ffaa',
+            skyColor: '#080818',
+            horizonColor: '#101030',
+            ambientColor: '#080810',
+            scene: 'concert-stage',
+            narrative: 'LYNN in her purple gown.\nTheir three daughters.\nJJ holding the ritual bag.\n\nEvery ancestor watching\nfrom beyond.\n\nEvery sacrifice honored.',
+            musicCue: '♪ Full orchestra swells...'
+          },
+          {
+            chapter: 14,
+            year: '2025',
+            name: 'TRIUMPH',
+            subtitle: 'A Tear of Pure Joy',
+            color: '#8a2be2',
+            skyColor: '#0a0a1a',
+            horizonColor: '#15153a',
+            ambientColor: '#0a0a15',
+            scene: 'concert-stage',
+            narrative: 'The crowd roars.\nLights pulse like heartbeats.\n\nPhileo touches the obsidian\none last time.\n\nA single tear of pure joy\nrolls down his cheek.',
+            musicCue: '♪ Triumphant finale...'
+          },
+          {
+            chapter: 15,
+            year: 'EPILOGUE',
+            name: 'EPOCH TO FLOCK',
+            subtitle: 'The Journey Continues',
+            color: '#8a2be2',
+            skyColor: '#0a0a1a',
+            horizonColor: '#20104a',
+            ambientColor: '#0a0810',
+            scene: 'concert-stage',
+            narrative: 'From one era to the next,\nthe obsidian carries forward.\n\nStories of survival.\nStories of love.\nStories that refused\nto be forgotten.\n\n- THE END -',
+            musicCue: '♪ Fade to silence...'
+          }
+        ];
+
+        // Keep eras reference for backward compatibility
+        const eras = chapters;
+
+        function transitionToEra(eraIndex) {
+          const chapter = chapters[eraIndex];
+          currentEra = eraIndex;
+
+          // Fade in
+          fadePlane.emit('fadeIn');
+
+          setTimeout(() => {
+            // Update chapter/era header
+            const headerText = `Chapter ${chapter.chapter}: ${chapter.name}`;
+            const subtitleText = chapter.subtitle ? `${chapter.year} - ${chapter.subtitle}` : chapter.year;
+            eraText.setAttribute('value', `${headerText}\n${subtitleText}`);
+            eraText.setAttribute('color', chapter.color);
+
+            // Update narrative
+            const textEl = narrativeText.querySelector('a-text');
+            textEl.setAttribute('value', chapter.narrative);
+
+            // Update music cue indicator
+            const audioIndicator = document.getElementById('audio-indicator');
+            const audioText = audioIndicator.querySelector('a-text');
+            audioText.setAttribute('value', chapter.musicCue);
+            audioText.setAttribute('color', chapter.color);
+
+            // Update environment colors
+            const currentEnv = environment.getAttribute('environment');
+            environment.setAttribute('environment', {
+              ...currentEnv,
+              skyColor: chapter.skyColor,
+              horizonColor: chapter.horizonColor
+            });
+
+            // Update ambient light
+            const ambientLight = document.querySelector('a-light[type="ambient"]');
+            ambientLight.setAttribute('color', chapter.ambientColor);
+
+            // Show/hide scene elements based on chapter's scene property
+            const cabin = document.getElementById('cabin');
+            const nativeCamp = document.getElementById('native-camp');
+            const burialScene = document.getElementById('burial-scene');
+            const discoveryScene = document.getElementById('discovery-scene');
+            const concertStage = document.getElementById('concert-stage');
+
+            cabin.setAttribute('visible', chapter.scene === 'cabin');
+            nativeCamp.setAttribute('visible', chapter.scene === 'native-camp');
+            burialScene.setAttribute('visible', chapter.scene === 'burial-scene');
+            discoveryScene.setAttribute('visible', chapter.scene === 'discovery-scene');
+            concertStage.setAttribute('visible', chapter.scene === 'concert-stage');
+
+            // Change point light color
+            const pointLight = document.querySelector('a-light[type="point"]');
+            pointLight.setAttribute('color', chapter.color);
+
+            // Update audio based on era period
+            if (window.ambientAudio) {
+              // Map chapter scenes to audio eras
+              const audioEraMap = {
+                'cabin': 0,
+                'native-camp': 1,
+                'burial-scene': 0,  // Somber wind like cabin
+                'discovery-scene': 2,
+                'concert-stage': 3
+              };
+              ambientAudio.setEra(audioEraMap[chapter.scene] || 0);
+            }
+
+            // Update progress indicator
+            updateProgressBar(eraIndex);
+
+            // Fade out
+            setTimeout(() => {
+              fadePlane.emit('fadeOut');
+            }, 300);
+
+          }, 500);
+        }
+
+        function updateProgressBar(currentChapter) {
+          const total = chapters.length;
+          const progress = ((currentChapter + 1) / total) * 100;
+          const width = (progress / 100) * 3;
+
+          const progressEl = document.getElementById('progress-fill');
+          if (progressEl) {
+            progressEl.setAttribute('geometry', `primitive: box; width: ${width}; height: 0.06; depth: 0.03`);
+            progressEl.setAttribute('position', `${-1.5 + width/2} 0 0.01`);
+            progressEl.setAttribute('material', `color: ${chapters[currentChapter].color}; emissive: ${chapters[currentChapter].color}; emissiveIntensity: 0.5`);
+          }
+
+          const counterEl = document.getElementById('chapter-counter');
+          if (counterEl) {
+            counterEl.setAttribute('value', `${currentChapter + 1} / ${total}`);
+          }
+        }
+
+        // Listen for era button clicks
+        document.addEventListener('era-change', (e) => {
+          if (isActivated) {
+            transitionToEra(e.detail.era);
+          }
+        });
+
+        el.addEventListener('click', function() {
+          if (!isActivated) {
+            // First activation - start the journey
+            isActivated = true;
+            narrativeText.setAttribute('visible', 'true');
+
+            // Show progress bar and navigation hint
+            document.getElementById('progress-bar').setAttribute('visible', 'true');
+            document.getElementById('nav-hint').setAttribute('visible', 'true');
+
+            // Hide era buttons for guided mode
+            timeMarkers.setAttribute('visible', 'false');
+
+            el.setAttribute('animation__pulse', 'property: scale; to: 1.3 1.3 1.3; dur: 300; easing: easeOutElastic');
+            setTimeout(() => {
+              el.setAttribute('animation__pulse', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutElastic');
+            }, 300);
+
+            transitionToEra(0);
+          } else {
+            // Progress through chapters sequentially
+            const nextChapter = currentEra + 1;
+
+            if (nextChapter < chapters.length) {
+              // Continue the journey
+              transitionToEra(nextChapter);
+
+              // Visual feedback
+              el.setAttribute('animation__pulse', 'property: scale; to: 1.15 1.15 1.15; dur: 150; easing: easeOutElastic');
+              setTimeout(() => {
+                el.setAttribute('animation__pulse', 'property: scale; to: 1 1 1; dur: 300; easing: easeOutElastic');
+              }, 150);
+            } else {
+              // Journey complete - option to restart or explore
+              const restart = confirm('The journey is complete. Would you like to experience it again?');
+              if (restart) {
+                transitionToEra(0);
+              } else {
+                // Enable free exploration mode
+                timeMarkers.setAttribute('visible', 'true');
+                document.getElementById('nav-hint').querySelector('a-text').setAttribute('value', 'Free exploration mode - click era buttons to jump');
+              }
+            }
+          }
+        });
+
+        el.addEventListener('mouseenter', function() {
+          document.getElementById('cursor').setAttribute('material', 'color', '#8a2be2');
+        });
+
+        el.addEventListener('mouseleave', function() {
+          document.getElementById('cursor').setAttribute('material', 'color', 'white');
+        });
+      }
+    });
+
+    // Hide instructions after first interaction
+    document.querySelector('a-scene').addEventListener('click', function() {
+      setTimeout(() => {
+        document.getElementById('instructions').style.opacity = '0';
+      }, 3000);
+    }, { once: true });
+
+    // Era-specific ambient audio
+    class AmbientAudio {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.isPlaying = false;
+        this.nodes = [];
+        this.currentEra = 0;
+      }
+
+      init() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = 0.3;
+        this.masterGain.connect(this.ctx.destination);
+      }
+
+      createNoise(type = 'white') {
+        const bufferSize = 2 * this.ctx.sampleRate;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        noise.loop = true;
+        return noise;
+      }
+
+      createWind(intensity = 0.15, filterFreq = 400) {
+        const noise = this.createNoise();
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = filterFreq;
+        filter.Q.value = 1;
+
+        const lfo = this.ctx.createOscillator();
+        const lfoGain = this.ctx.createGain();
+        lfo.frequency.value = 0.1 + Math.random() * 0.1;
+        lfoGain.gain.value = 100;
+        lfo.connect(lfoGain);
+        lfoGain.connect(filter.frequency);
+        lfo.start();
+
+        const windGain = this.ctx.createGain();
+        windGain.gain.value = intensity;
+
+        noise.connect(filter);
+        filter.connect(windGain);
+        windGain.connect(this.masterGain);
+        noise.start();
+
+        this.nodes.push({ source: noise, lfo: lfo, gain: windGain });
+        return windGain;
+      }
+
+      createFire() {
+        const noise = this.createNoise();
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 800;
+        filter.Q.value = 0.5;
+
+        const lfo = this.ctx.createOscillator();
+        const lfoGain = this.ctx.createGain();
+        lfo.frequency.value = 8 + Math.random() * 4;
+        lfoGain.gain.value = 0.08;
+        lfo.connect(lfoGain);
+
+        const fireGain = this.ctx.createGain();
+        fireGain.gain.value = 0.1;
+        lfoGain.connect(fireGain.gain);
+        lfo.start();
+
+        noise.connect(filter);
+        filter.connect(fireGain);
+        fireGain.connect(this.masterGain);
+        noise.start();
+
+        this.nodes.push({ source: noise, lfo: lfo });
+      }
+
+      createCrowd() {
+        // Multiple filtered noise layers for crowd murmur
+        for (let i = 0; i < 3; i++) {
+          const noise = this.createNoise();
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.value = 300 + i * 200;
+          filter.Q.value = 2;
+
+          const lfo = this.ctx.createOscillator();
+          const lfoGain = this.ctx.createGain();
+          lfo.frequency.value = 0.3 + Math.random() * 0.5;
+          lfoGain.gain.value = 0.05;
+          lfo.connect(lfoGain);
+
+          const crowdGain = this.ctx.createGain();
+          crowdGain.gain.value = 0.06;
+          lfoGain.connect(crowdGain.gain);
+          lfo.start();
+
+          noise.connect(filter);
+          filter.connect(crowdGain);
+          crowdGain.connect(this.masterGain);
+          noise.start();
+
+          this.nodes.push({ source: noise, lfo: lfo });
+        }
+      }
+
+      createDrone(baseFreq = 55, intensity = 0.08) {
+        const frequencies = [baseFreq, baseFreq * 1.5, baseFreq * 2];
+
+        const droneGain = this.ctx.createGain();
+        droneGain.gain.value = intensity;
+
+        frequencies.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          osc.type = i === 0 ? 'sine' : 'triangle';
+          osc.frequency.value = freq;
+          osc.detune.value = Math.random() * 10 - 5;
+
+          const oscGain = this.ctx.createGain();
+          oscGain.gain.value = 0.3 / (i + 1);
+
+          osc.connect(oscGain);
+          oscGain.connect(droneGain);
+          osc.start();
+          this.nodes.push({ oscillators: [osc] });
+        });
+
+        droneGain.connect(this.masterGain);
+        return droneGain;
+      }
+
+      createBirds() {
+        // Occasional bird-like chirps
+        const chirp = () => {
+          if (!this.isPlaying || this.currentEra !== 2) return;
+
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = 2000 + Math.random() * 1500;
+
+          gain.gain.setValueAtTime(0, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.03, this.ctx.currentTime + 0.05);
+          gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.15);
+
+          osc.connect(gain);
+          gain.connect(this.masterGain);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.2);
+
+          setTimeout(chirp, 2000 + Math.random() * 5000);
+        };
+        setTimeout(chirp, 1000);
+      }
+
+      stopAllNodes() {
+        this.nodes.forEach(node => {
+          try {
+            if (node.source) node.source.stop();
+            if (node.lfo) node.lfo.stop();
+            if (node.oscillators) node.oscillators.forEach(o => o.stop());
+          } catch(e) {}
+        });
+        this.nodes = [];
+      }
+
+      setEra(eraIndex) {
+        if (!this.ctx || !this.isPlaying) return;
+
+        this.currentEra = eraIndex;
+        this.stopAllNodes();
+
+        // Era-specific soundscapes
+        switch(eraIndex) {
+          case 0: // 1864 Homestead - tense, windy, fire crackling
+            this.createWind(0.12, 300);
+            this.createFire();
+            this.createDrone(45, 0.06);
+            break;
+          case 1: // Native Settlement - peaceful wind, nature
+            this.createWind(0.1, 500);
+            this.createDrone(65, 0.05);
+            break;
+          case 2: // 1975 Discovery - open plains, birds, hopeful
+            this.createWind(0.08, 600);
+            this.createDrone(55, 0.04);
+            this.createBirds();
+            break;
+          case 3: // 2025 Concert - crowd, excitement
+            this.createCrowd();
+            this.createDrone(80, 0.1);
+            break;
+        }
+      }
+
+      start() {
+        if (this.isPlaying) return;
+        if (!this.ctx) this.init();
+
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+
+        this.isPlaying = true;
+        this.setEra(0);
+
+        this.masterGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        this.masterGain.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime + 2);
+      }
+
+      stop() {
+        if (!this.isPlaying) return;
+        this.masterGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1);
+        setTimeout(() => {
+          this.stopAllNodes();
+          this.isPlaying = false;
+        }, 1100);
+      }
+    }
+
+    // Initialize ambient audio on first interaction
+    window.ambientAudio = new AmbientAudio();
+    document.querySelector('a-scene').addEventListener('click', function() {
+      if (!window.ambientAudio.isPlaying) {
+        window.ambientAudio.start();
+      }
+    }, { once: true });
+  </script>
+</body>
+</html>
